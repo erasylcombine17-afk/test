@@ -1,55 +1,84 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local player = game.Players.LocalPlayer
+local healing = false
 
-local healEnabled = false
 local healAmount = 5
-local healRadius = 5
+local healDelay = 1
 
-local healButton = Instance.new("TextButton")
-healButton.Parent = main
-healButton.Size = UDim2.new(0,180,0,40)
-healButton.Position = UDim2.new(0,20,0,140)
-healButton.Text = "Healing OFF"
-healButton.TextScaled = true
-healButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
+local gui = Instance.new("ScreenGui", game.CoreGui)
 
-main.Size = UDim2.new(0,220,0,190)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,220,0,220)
+frame.Position = UDim2.new(0,250,0.5,-100)
+frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
 
-healButton.MouseButton1Click:Connect(function()
-    healEnabled = not healEnabled
+local healBtn = Instance.new("TextButton", frame)
+healBtn.Size = UDim2.new(0,180,0,40)
+healBtn.Position = UDim2.new(0,20,0,10)
+healBtn.Text = "Heal OFF"
 
-    if healEnabled then
-        healButton.Text = "Healing ON"
-        healButton.BackgroundColor3 = Color3.fromRGB(50,255,50)
-    else
-        healButton.Text = "Healing OFF"
-        healButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
-    end
+local amountLabel = Instance.new("TextLabel", frame)
+amountLabel.Size = UDim2.new(0,180,0,30)
+amountLabel.Position = UDim2.new(0,20,0,60)
+amountLabel.Text = "HP: "..healAmount
+
+local speedLabel = Instance.new("TextLabel", frame)
+speedLabel.Size = UDim2.new(0,180,0,30)
+speedLabel.Position = UDim2.new(0,20,0,130)
+speedLabel.Text = "Delay: "..healDelay
+
+local plus1 = Instance.new("TextButton", frame)
+plus1.Size = UDim2.new(0,50,0,30)
+plus1.Position = UDim2.new(0,150,0,95)
+plus1.Text = "+HP"
+
+local minus1 = Instance.new("TextButton", frame)
+minus1.Size = UDim2.new(0,50,0,30)
+minus1.Position = UDim2.new(0,20,0,95)
+minus1.Text = "-HP"
+
+local plus2 = Instance.new("TextButton", frame)
+plus2.Size = UDim2.new(0,50,0,30)
+plus2.Position = UDim2.new(0,150,0,165)
+plus2.Text = "+SPD"
+
+local minus2 = Instance.new("TextButton", frame)
+minus2.Size = UDim2.new(0,50,0,30)
+minus2.Position = UDim2.new(0,20,0,165)
+minus2.Text = "-SPD"
+
+healBtn.MouseButton1Click:Connect(function()
+    healing = not healing
+    healBtn.Text = healing and "Heal ON" or "Heal OFF"
+end)
+
+plus1.MouseButton1Click:Connect(function()
+    healAmount += 5
+    amountLabel.Text = "HP: "..healAmount
+end)
+
+minus1.MouseButton1Click:Connect(function()
+    healAmount = math.max(1, healAmount - 5)
+    amountLabel.Text = "HP: "..healAmount
+end)
+
+plus2.MouseButton1Click:Connect(function()
+    healDelay += 0.5
+    speedLabel.Text = "Delay: "..healDelay
+end)
+
+minus2.MouseButton1Click:Connect(function()
+    healDelay = math.max(0.1, healDelay - 0.5)
+    speedLabel.Text = "Delay: "..healDelay
 end)
 
 task.spawn(function()
     while true do
-        task.wait(1)
-
-        if healEnabled then
+        task.wait(healDelay)
+        if healing then
             local char = player.Character
-            if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
-                local humanoid = char.Humanoid
-                local root = char.HumanoidRootPart
-
-                humanoid.Health = math.min(humanoid.MaxHealth, humanoid.Health + healAmount)
-
-                for _, plr in pairs(Players:GetPlayers()) do
-                    if plr ~= player and plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") then
-                        local targetRoot = plr.Character.HumanoidRootPart
-                        local distance = (targetRoot.Position - root.Position).Magnitude
-
-                        if distance <= healRadius then
-                            local targetHum = plr.Character.Humanoid
-                            targetHum.Health = math.min(targetHum.MaxHealth, targetHum.Health + healAmount)
-                        end
-                    end
-                end
+            if char and char:FindFirstChild("Humanoid") then
+                local hum = char.Humanoid
+                hum.Health = math.min(hum.MaxHealth, hum.Health + healAmount)
             end
         end
     end
