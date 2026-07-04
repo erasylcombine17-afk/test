@@ -14,7 +14,6 @@ frame.Size = UDim2.new(0,220,0,220)
 frame.Position = UDim2.new(0,250,0.5,-100)
 frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
 
--- Drag system
 local dragging = false
 local dragStart
 local startPos
@@ -55,54 +54,46 @@ amountLabel.Size = UDim2.new(0,180,0,30)
 amountLabel.Position = UDim2.new(0,20,0,60)
 amountLabel.Text = "HP: "..healAmount
 
+local hpBox = Instance.new("TextBox", frame)
+hpBox.Size = UDim2.new(0,180,0,30)
+hpBox.Position = UDim2.new(0,20,0,95)
+hpBox.Text = tostring(healAmount)
+hpBox.PlaceholderText = "Введите HP"
+
 local speedLabel = Instance.new("TextLabel", frame)
 speedLabel.Size = UDim2.new(0,180,0,30)
 speedLabel.Position = UDim2.new(0,20,0,130)
 speedLabel.Text = "Delay: "..healDelay
 
-local plus1 = Instance.new("TextButton", frame)
-plus1.Size = UDim2.new(0,50,0,30)
-plus1.Position = UDim2.new(0,150,0,95)
-plus1.Text = "+HP"
-
-local minus1 = Instance.new("TextButton", frame)
-minus1.Size = UDim2.new(0,50,0,30)
-minus1.Position = UDim2.new(0,20,0,95)
-minus1.Text = "-HP"
-
-local plus2 = Instance.new("TextButton", frame)
-plus2.Size = UDim2.new(0,50,0,30)
-plus2.Position = UDim2.new(0,150,0,165)
-plus2.Text = "+SPD"
-
-local minus2 = Instance.new("TextButton", frame)
-minus2.Size = UDim2.new(0,50,0,30)
-minus2.Position = UDim2.new(0,20,0,165)
-minus2.Text = "-SPD"
+local delayBox = Instance.new("TextBox", frame)
+delayBox.Size = UDim2.new(0,180,0,30)
+delayBox.Position = UDim2.new(0,20,0,165)
+delayBox.Text = tostring(healDelay)
+delayBox.PlaceholderText = "Введите Delay"
 
 healBtn.MouseButton1Click:Connect(function()
 	healing = not healing
 	healBtn.Text = healing and "Heal ON" or "Heal OFF"
 end)
 
-plus1.MouseButton1Click:Connect(function()
-	healAmount += 5
-	amountLabel.Text = "HP: "..healAmount
+hpBox.FocusLost:Connect(function()
+	local value = tonumber(hpBox.Text)
+	if value and value > 0 then
+		healAmount = value
+		amountLabel.Text = "HP: "..healAmount
+	else
+		hpBox.Text = tostring(healAmount)
+	end
 end)
 
-minus1.MouseButton1Click:Connect(function()
-	healAmount = math.max(1, healAmount - 5)
-	amountLabel.Text = "HP: "..healAmount
-end)
-
-plus2.MouseButton1Click:Connect(function()
-	healDelay += 0.5
-	speedLabel.Text = "Delay: "..healDelay
-end)
-
-minus2.MouseButton1Click:Connect(function()
-	healDelay = math.max(0.1, healDelay - 0.5)
-	speedLabel.Text = "Delay: "..healDelay
+delayBox.FocusLost:Connect(function()
+	local value = tonumber(delayBox.Text)
+	if value and value > 0 then
+		healDelay = value
+		speedLabel.Text = "Delay: "..healDelay
+	else
+		delayBox.Text = tostring(healDelay)
+	end
 end)
 
 task.spawn(function()
