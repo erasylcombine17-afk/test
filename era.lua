@@ -1,110 +1,63 @@
 local player = game.Players.LocalPlayer
-local UIS = game:GetService("UserInputService")
+local char = player.Character or player.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
 
-local healing = false
-local healAmount = 5
-local healDelay = 1
+local speed = 16
 
-local gui = Instance.new("ScreenGui")
-gui.Parent = game.CoreGui
-
-local frame = Instance.new("Frame")
-frame.Parent = gui
-frame.Size = UDim2.new(0,220,0,220)
-frame.Position = UDim2.new(0,250,0.5,-100)
+-- GUI
+local gui = Instance.new("ScreenGui", game.CoreGui)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,220,0,180)
+frame.Position = UDim2.new(0.1,0,0.3,0)
 frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
 
-local dragging = false
-local dragStart
-local startPos
-
-frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = frame.Position
-	end
-end)
-
-frame.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = false
-	end
-end)
-
-UIS.InputChanged:Connect(function(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-		local delta = input.Position - dragStart
-		frame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
-end)
-
-local healBtn = Instance.new("TextButton", frame)
-healBtn.Size = UDim2.new(0,180,0,40)
-healBtn.Position = UDim2.new(0,20,0,10)
-healBtn.Text = "Heal OFF"
-
-local amountLabel = Instance.new("TextLabel", frame)
-amountLabel.Size = UDim2.new(0,180,0,30)
-amountLabel.Position = UDim2.new(0,20,0,60)
-amountLabel.Text = "HP: "..healAmount
-
-local hpBox = Instance.new("TextBox", frame)
-hpBox.Size = UDim2.new(0,180,0,30)
-hpBox.Position = UDim2.new(0,20,0,95)
-hpBox.Text = tostring(healAmount)
-hpBox.PlaceholderText = "Введите HP"
-
 local speedLabel = Instance.new("TextLabel", frame)
-speedLabel.Size = UDim2.new(0,180,0,30)
-speedLabel.Position = UDim2.new(0,20,0,130)
-speedLabel.Text = "Delay: "..healDelay
+speedLabel.Size = UDim2.new(0,200,0,30)
+speedLabel.Position = UDim2.new(0,10,0,10)
+speedLabel.Text = "Speed: "..speed
+speedLabel.BackgroundColor3 = Color3.fromRGB(50,50,50)
+speedLabel.TextColor3 = Color3.new(1,1,1)
 
-local delayBox = Instance.new("TextBox", frame)
-delayBox.Size = UDim2.new(0,180,0,30)
-delayBox.Position = UDim2.new(0,20,0,165)
-delayBox.Text = tostring(healDelay)
-delayBox.PlaceholderText = "Введите Delay"
+local plus = Instance.new("TextButton", frame)
+plus.Size = UDim2.new(0,95,0,40)
+plus.Position = UDim2.new(0,10,0,50)
+plus.Text = "+ Speed"
 
-healBtn.MouseButton1Click:Connect(function()
-	healing = not healing
-	healBtn.Text = healing and "Heal ON" or "Heal OFF"
+local minus = Instance.new("TextButton", frame)
+minus.Size = UDim2.new(0,95,0,40)
+minus.Position = UDim2.new(0,115,0,50)
+minus.Text = "- Speed"
+
+local fly = Instance.new("TextButton", frame)
+fly.Size = UDim2.new(0,200,0,40)
+fly.Position = UDim2.new(0,10,0,110)
+fly.Text = "Fly"
+
+local flying = false
+local bv
+
+plus.MouseButton1Click:Connect(function()
+	speed = speed + 5
+	hum.WalkSpeed = speed
+	speedLabel.Text = "Speed: "..speed
 end)
 
-hpBox.FocusLost:Connect(function()
-	local value = tonumber(hpBox.Text)
-	if value and value > 0 then
-		healAmount = value
-		amountLabel.Text = "HP: "..healAmount
+minus.MouseButton1Click:Connect(function()
+	speed = math.max(16, speed - 5)
+	hum.WalkSpeed = speed
+	speedLabel.Text = "Speed: "..speed
+end)
+
+fly.MouseButton1Click:Connect(function()
+	flying = not flying
+	if flying then
+		bv = Instance.new("BodyVelocity")
+		bv.MaxForce = Vector3.new(999999,999999,999999)
+		bv.Velocity = Vector3.new(0,50,0)
+		bv.Parent = char.HumanoidRootPart
+		fly.Text = "Fly ON"
 	else
-		hpBox.Text = tostring(healAmount)
-	end
-end)
-
-delayBox.FocusLost:Connect(function()
-	local value = tonumber(delayBox.Text)
-	if value and value > 0 then
-		healDelay = value
-		speedLabel.Text = "Delay: "..healDelay
-	else
-		delayBox.Text = tostring(healDelay)
-	end
-end)
-
-task.spawn(function()
-	while true do
-		task.wait(healDelay)
-		if healing then
-			local char = player.Character
-			if char and char:FindFirstChild("Humanoid") then
-				local hum = char.Humanoid
-				hum.Health = math.min(hum.MaxHealth, hum.Health + healAmount)
-			end
-		end
+		if bv then bv:Destroy() end
+		fly.Text = "Fly OFF"
 	end
 end)
